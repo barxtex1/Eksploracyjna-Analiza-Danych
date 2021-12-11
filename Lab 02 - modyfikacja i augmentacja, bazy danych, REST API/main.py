@@ -2,8 +2,7 @@ import sqlite3
 import requests
 import pandas as pd
 import json
-from password import API
-
+import matplotlib.pyplot as plt
 
 # conn = sqlite3.connect("Chinook_Sqlite.sqlite")  # połączenie do bazy danych - pliku
 # c = conn.cursor()
@@ -51,12 +50,26 @@ from password import API
 
 #### ZAD4
 url = "https://api.openweathermap.org/data/2.5/onecall"
-api_key = API
+file_r = open(r"C:\Users\barte\Documents\PycharmProjects\Eksploracyjna Analiza Danych\lab02_pass\password.txt", 'r')
+API = file_r.read()
+file_r.close()
+api_key = str(API)
 latitude = 53.169558090827394
 longitude = 15.421173151897403
 req = requests.get(f"{url}?lat={latitude}&lon={longitude}&lang=pl&units=metric&exclude=daily&appid={api_key}")
 data = json.loads(req.text)
-data_hourly = json.dumps(data["hourly"])
-print(data_hourly["dt"])
-# df = pd.DataFrame(data_hourly.values(),index=data_hourly.keys(),columns=[])
-# print(df)
+dict = {'temp': [],
+        'feels_like': [],
+        'humidity': [],
+        'wind_speed': []}
+DateTime = []
+for line in data["hourly"]:
+    DateTime.append(pd.to_datetime(line['dt'],unit='s'))
+    dict['temp'].append(line['temp'])
+    dict['feels_like'].append(line['feels_like'])
+    dict['humidity'].append(line['humidity'])
+    dict['wind_speed'].append(line['wind_speed'])
+DF_weather_zch = pd.DataFrame(data=dict,index=DateTime)
+print(DF_weather_zch)
+DF_weather_zch.plot()
+plt.show()
