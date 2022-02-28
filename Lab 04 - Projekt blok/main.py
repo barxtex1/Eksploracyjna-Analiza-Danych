@@ -1,22 +1,37 @@
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
+
 
 
 def new_frequency_columns(df, when):
     df = pd.pivot_table(df, values="number", index=["sex", "name"], aggfunc=np.sum)
-    df.loc["M", "frequency_male"] = (df["number"] * when) / len(df.loc["M", :])
-    df.loc["F", "frequency_female"] = (df["number"] * when) / len(df.loc["F", :])
+    df.loc["M", "frequency_male"] = (df["number"] * when) / np.sum(df.loc["M", "number"])
+    df.loc["F", "frequency_female"] = (df["number"] * when) / np.sum(df.loc["F", "number"])
     return df
+
+
+def plot_graph(count_of_born, birthrate_sex):
+    czas = np.arange(1880, 2021)
+    fig, axs = plt.subplots(2, 1)
+    axs[0].plot(czas, count_of_born, '-b')
+    axs[1].plot(czas, birthrate_sex, '-g')
+    plt.show()
 
 
 def import_data():
     all_data = pd.DataFrame()
-    for i in np.arange(1880,2021):
+    count_of_born_ = []
+    birthrate_sex_ = []
+    for i in np.arange(1880, 2021):
         simple_data = pd.DataFrame(pd.read_csv("names/yob" + str(i) + ".txt", names=["name", "sex", "number"],
                                                index_col=0))
         simple_data = new_frequency_columns(simple_data, int(i))
+        count_of_born_.append(np.sum(simple_data["number"]))
+        birthrate_sex_.append(np.sum(simple_data.loc["F", "number"]) / np.sum(simple_data.loc["M", "number"]))
         all_data = pd.concat([all_data, simple_data])
     data_ = pd.pivot_table(all_data, values=["number", "frequency_male", "frequency_female"], index=["sex", "name"], aggfunc=np.sum)
+    plot_graph(np.array(count_of_born_), np.array(birthrate_sex_))
     return data_
 
 
