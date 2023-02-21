@@ -30,12 +30,54 @@ def testing_dataframe():
     print(df)
     print(df[0.2:1.0])
     print(df.iloc[0:3, df.columns.get_loc('C')])
-    # start Modyfikacja zawartości
+    alpha = np.array([0, np.pi / 4, np.pi / 2, np.pi * 3 / 4, np.pi])
 
+    trig = pd.DataFrame({"sinus": np.round(np.sin(alpha), 10),
+                         "cosinus": np.round(np.cos(alpha), 10),
+                         "x^2": alpha ** 2,
+                         "random": np.random.randn(len(alpha))}, index=alpha)
+    trig.iloc[1:4, trig.columns.get_loc("random")] = 0
+    trig.loc[1337, "cosinus"] = -1
+    print(trig)
+    rename_dict = {"sinus": "sin", "cosinus": "cos"}
+
+    trig.rename(columns=rename_dict, inplace=True)
+    print(trig)
+    trig.sort_values("sin", axis=0, inplace=True,
+                     ascending=False)  # sortowanie wzdłuż osi 0 (po wierszach), w miejscu, malejąco
+
+    trig.to_csv("trig.csv")
+    trig_from_csv = pd.DataFrame(pd.read_csv("trig.csv", index_col=0))  # read_csv() może zwracać nie tylko DataFrame przekazanie do konstruktora usprawni podpowiadanie składni w IDE
+    print(trig_from_csv)
+    print(type(trig_from_csv))
+    print("#############")
+    cos = pd.read_csv("trig.csv", index_col=0)
+    print(cos)
+    print(type(cos))
+    print("Czy to to samo:", trig_from_csv == cos)
+
+
+def final_tasks():
+    data = pd.DataFrame(pd.read_csv("population_by_country_2019_2020.csv", index_col=0))
+    data["Net population change"] = abs(data["Population (2020)"] - data["Population (2019)"])
+    data["Population change [%]"] = (data["Net population change"] / data["Population (2020)"]) * 100
+    data.sort_values("Population change [%]", axis=0, inplace=True, ascending=False)
+    print(data.iloc[:10, :])
+    most_population_change = data.filter(regex=r"Population \(20\d\d\)").iloc[:10, :]
+    # most_population_change.plot(kind='bar')
+    # plt.show()
+    data["Density (2020)"] = "Low"
+    print(data.columns)
+    data.loc[data["Population (2020)"] / data["Land Area (Km²)"] > 500, "Density (2020)"] = "High"
+    data.loc[data["Population (2020)"] / data["Land Area (Km²)"] < 500, "Density (2020)"] = data["Population (2020)"] / data["Land Area (Km²)"]
+    print(data.iloc[:10, :])
+    data_to_save = data.iloc[::2, :]
+    data_to_save.to_csv("population_output.csv")
 
 def main():
     # example_dataframe()
-    testing_dataframe()
+    # testing_dataframe()
+    final_tasks()
 
 if __name__ == '__main__':
     main()
